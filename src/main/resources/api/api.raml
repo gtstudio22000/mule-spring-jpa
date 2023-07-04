@@ -1,0 +1,38 @@
+#%RAML 1.0
+types:
+  account:
+    description: Account object
+    properties:
+      id:
+        example: 1
+        type: number
+        format: int
+      name:
+        example: Example
+        type: string
+title: Account API
+baseUri: api
+description: Account API Example
+mediaType:
+  - application/json
+version: "1.0"
+protocols:
+  - HTTP
+/account:
+  post:
+    displayName: account
+    description: Create an account
+    body:
+      type: account
+    responses:
+      "200":
+        body:
+          type: account
+/accounts:
+  get:
+    displayName: accounts
+    description: Return a list of accounts
+    responses:
+      "200":
+        body:
+          type: array

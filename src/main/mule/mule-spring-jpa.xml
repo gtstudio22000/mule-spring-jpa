@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:java="http://www.mulesoft.org/schema/mule/java"
+	xmlns:spring="http://www.mulesoft.org/schema/mule/spring"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/spring http://www.mulesoft.org/schema/mule/spring/current/mule-spring.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<spring:config name="springConfig" files="beans.xml" />
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="637de5ce-3dc0-44ce-878b-01f9ea74626b" basePath="api" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="mule-spring-jpaFlow" doc:id="17d14bac-3aa1-417a-a7d9-02268b28e26b" >
+		<http:listener doc:name="Listener" doc:id="ebc373f0-3afa-48e8-b181-d45aed11151d" config-ref="HTTP_Listener_config" path="account" allowedMethods="GET" outputMimeType="application/json"/>
+		<java:invoke doc:name="Invoke" doc:id="bd8ba3e1-9a72-41fa-8c88-1227568c6d9a" instance="accountService" class="com.fdp.mule.demo.AccountService" method="retrieveAllAccounts()" outputMimeType="application/java" target="myOutput"/>
+		<ee:transform doc:name="Transform Message" doc:id="b6290724-6757-4e5a-b2d2-5fd4f7eb1993" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+---
+vars.myOutput]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="405f58de-4918-40f7-9512-12879659f345" message="account apis" />
+	</flow>
+	<flow name="mule-spring-jpaFlow1" doc:id="e2c4a35b-8186-45cf-a81c-b4fcfe3019a7" >
+		<http:listener doc:name="Listener" doc:id="a6ab67f4-da70-4b31-a5d3-8cee8f8c7e3b" config-ref="HTTP_Listener_config" path="account" allowedMethods="POST"/>
+		<logger level="INFO" doc:name="Logger" doc:id="277511f2-c066-4c63-83be-a99d50d9cfdf" message="Received #[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="745d833e-74cd-4c68-8cdb-aa778000d91b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/java
+---
+payload as Object {class: "com.fdp.mule.demo.Account"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="4c4b3c8e-706d-4dfb-9a7a-d38508d9b594" message="account transformed #[payload]"/>
+		<java:invoke doc:name="Invoke" doc:id="f5170290-4d7c-4b45-9e64-946b14c547f9" instance="accountService" class="com.fdp.mule.demo.AccountService" method="createAccount(com.fdp.mule.demo.Account)" target="myAccount"/>
+	</flow>
+</mule>
